@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.Scanner;
 
 public class DB {
 	 int order[];
@@ -30,7 +31,7 @@ public class DB {
 	public  int rand_int(Random rand, int num)
 	{
 		
-		return (int)(rand.nextDouble()*num);
+		return (int)(rand.nextInt(num));
 	}
 	public  void st1(Connection conn) throws SQLException
 	{
@@ -71,7 +72,7 @@ public class DB {
 	    	{
 
 	    		str=rand_alpha(5);
-		    	if(!hashset.contains("str"))
+		    	if(!hashset.contains(str))
 		    	{
 		    		break;
 		    	}else
@@ -100,12 +101,13 @@ public class DB {
 	{
 		Random rand = new Random();
 	    String SQLStmt3 = "INSERT INTO 고객 "  
-				+ "(고객번호,성별,가입일자,연락처,연령,고객등급) " 
-				+ "VALUES(?, ?,?,?,?,?)";
+				+ "(고객번호,성별,가입일자,연락처,연령,고객등급,고객명) " 
+				+ "VALUES(?, ?,?,?,?,?,?)";
+	    HashSet<String> hashset = new HashSet<String>();
 	    PreparedStatement stmt3 = conn.prepareStatement(SQLStmt3);
 	    /*
-	     * + "(고객번호,성별,가입일자,연락처,연령,고객등급) " 
-				+ "VALUES(?, ?,?,?,?,?)";
+	     * + "(고객번호,성별,가입일자,연락처,연령,고객등급,고객명) " 
+				+ "VALUES(?, ?,?,?,?,?,?)";
 	     */
 	    System.out.println("고객시작");
 	    int customer[]= new int[customer_size+1];
@@ -127,20 +129,17 @@ public class DB {
 	        stmt3.setDate(3, new java.sql.Date(cal.getTimeInMillis()));
 	        
 	        
-	        String str_phone = String.valueOf(rand_int(rand,99999999));
+	        String str_phone = String.valueOf(rand_int(rand,99999999)+1);
 	        while(str_phone.length()!=8)
 	        {
-	        	str_phone = String.valueOf(rand_int(rand,99999999));
+	        	str_phone = String.valueOf(rand_int(rand,99999999)+1);
 	        }
 	        str_phone="010"+str_phone;
 	        
 	        stmt3.setString(4, str_phone);
 	        
-	        int age = rand_int(rand,100);
-	        while(age<20)
-	        {
-	        	age = rand_int(rand,100);
-	        }
+	        int age = 20+rand_int(rand,80);
+	        
 	        stmt3.setLong(5, rand_int(rand,100));
 	        int grade = rand_int(rand,100);
 	        
@@ -163,7 +162,21 @@ public class DB {
 	        }				 		
 	    	stmt3.setString(6,str);
 	        
-	        
+	    	str ="";
+	    	while(true)
+	    	{
+
+	    		str=rand_alpha(5);
+		    	if(!hashset.contains(str))
+		    	{
+		    		break;
+		    	}else
+		    	{
+		    		hashset.add(str);
+		    	}
+	    	}
+	    	stmt3.setString(7, str);
+
 	        stmt3.addBatch();
 	    	
 	        if(i%arr_process_num==0)
@@ -171,6 +184,8 @@ public class DB {
 	    		stmt3.executeBatch();
 	    	}
 	    }
+	    stmt3.executeBatch();
+	    
 	    System.out.println("고객완료");
 	    
 
@@ -188,8 +203,8 @@ public class DB {
 	    {
 	    	stmt4.setLong(1, i);
 	    	
-	    	stmt4.setLong(2, rand_int(rand,product_size-1)+1);
-	    	stmt4.setLong(3, rand_int(rand,customer_size-1)+1);
+	    	stmt4.setLong(2, rand_int(rand,product_size)+1);
+	    	stmt4.setLong(3, rand_int(rand,customer_size)+1);
 	    	
 	    	Calendar cal = Calendar.getInstance();
 		    cal.set(2021, 1, 1);
@@ -255,7 +270,7 @@ public class DB {
 	        }else if(rndint<=98&&rndint>97)
 	        {
 	        	str+=String.valueOf((char)('P'));
-	        }else if(rndint<=98&&rndint>98)
+	        }else if(rndint<=99&&rndint>98)
 	        {
 	        	str+=String.valueOf((char)('Q'));
 	        }else
@@ -280,7 +295,9 @@ public class DB {
 	        
 	        
 	    }
-	   stmt4.clearBatch();
+		stmt4.executeBatch();
+		conn.commit();
+		stmt4.clearBatch();
 	    System.out.println("주문완료");
 	}
 	public void st5(Connection conn,int arr_process_num,int order_size, int charge_size) throws SQLException
@@ -301,12 +318,12 @@ public class DB {
 	    {
 	    	stmt5.setLong(1, i);
 	    	
-	    	int jumun=rand_int(rand,order_size-1)+1;
+	    	int jumun=rand_int(rand,order_size)+1;
 	    	while(true)
 	    	{
 	    		if(!hashset_gualge.contains(jumun))
 	    			break;
-	    		jumun=rand_int(rand,order_size-1)+1;
+	    		jumun=rand_int(rand,order_size)+1;
 	    	}
 	    	hashset_gualge.add(jumun);
 	    	stmt5.setLong(2, jumun);
@@ -336,25 +353,54 @@ public class DB {
 	    		conn.commit();
 	    	}
 	    }
+		stmt5.executeBatch();
+		conn.commit();
+
 	    stmt5.clearBatch();
 	    System.out.println("결제완료");
+	    
 	}
 	public void start()
 	{
+		Scanner sc = new Scanner(System.in);
+		
 		String ip = "127.0.0.1";// 본인 ip
 		String port = "1614";//본인 포트
 		String sid = "oracle2";
 		String url = "jdbc:oracle:thin:@"+ip+":"+port+":"+sid;
 		String id = "orcl2";
 		String password = "orcl2";
-		
 		int product_size = 15000;
 		int customer_size = 1000000;
 		int order_size= 60000000;
 		int charge_size=55000000;
-
 		int arr_process_num = 100000;
 
+		
+		System.out.println("IP를 입력해주세요 ex)127.0.0.1");
+		ip=sc.nextLine();
+		System.out.println("오라클 포트를 입력해주세요 ex)1521");
+		port=sc.nextLine();
+		System.out.println("SID를 입력해주세요");
+		sid= sc.nextLine();
+		System.out.println("ID를 입력해주세요");
+		id = sc.nextLine();
+		System.out.println("비밀번호를 입력해주세요");
+		password = sc.nextLine();
+		
+		System.out.println("상품 테이블 사이즈를 입력해주세요 1100만 이하의 숫자 ex) 15000");
+		product_size = Integer.parseInt(sc.nextLine());
+		System.out.println("고객 테이블 사이즈 를 입력해주세요 1100만 이하의 숫자 ex)1000000");
+		customer_size  = Integer.parseInt(sc.nextLine());
+		System.out.println("주문 테이블 사이즈 를 입력해주세요 ex)60000000");
+		order_size  = Integer.parseInt(sc.nextLine());
+		System.out.println("결제 테이블 사이즈 를 입력해주세요 ex)55000000");
+		charge_size  = Integer.parseInt(sc.nextLine());
+		System.out.println("배치에 입력될 사이즈 를 입력해주세요 ex)100000");
+		arr_process_num  = Integer.parseInt(sc.nextLine());
+		
+		
+		
 		long starttime = System.currentTimeMillis(); 
 
 		Connection conn = null;
