@@ -7,7 +7,8 @@ sql 폴더의 firstddl.sql을 오라클에 실행시킨다.
 
 # 2. JAR 실행
 
-JAR 폴더의 oracle_db_test_set.jar 을 실행시킨다.
+JAR 폴더의 oracle_db_test_set.jar 을 아래의 명령어로 실행시킨다.
+java -jar oracle_db_test_set.jar
 
 입력.TXT는 아래와 같은 10개의 줄로 구성되어 있다.
 
